@@ -40,11 +40,17 @@ def probable_med_and_table(medi_name):
     cursor.execute(f"SELECT * FROM medicine WHERE medicine_name LIKE '%{medi_name}%'")
     data = cursor.fetchall()
 
+    cursor.execute(f"SELECT medicine_name FROM medicine WHERE medicine_name LIKE '%{medi_name}%'")
+    medicines = cursor.fetchall()
+
     medicine_list = []
 
     for medicine, usage, qty in data:
-        medicine_list += medicine
         prob_table.add_row([medicine, usage, qty])
+
+    for medi in medicines:
+        medicine_list += medi
+
 
     if len(medicine_list) == 0:
         prob_table.add_row(['nothing found','nothing found','nothing found'])
@@ -55,9 +61,9 @@ def probable_med_and_table(medi_name):
 os.system('cls')
 print("_________________________SAINIK SCHOOL KALIKIRI______________________\n"
       "____________________________SANJEEVANI BLOCK_________________________\n"
-      "______________________MEDICINE DATABASE MANAGEMENT___________________")
-print("\n")
-while 1:
+      "______________________MEDICINE DATABASE MANAGEMENT___________________\n")
+
+while True:
     print("\n")
     # Features of the Program
     print(chr(9899), "Press (1) to view the Medicine Table")
@@ -72,6 +78,7 @@ while 1:
     # Input from the user to go to specific column
     main_input = input("Enter the Required Number: ")
 
+    #If user chose input as 1 then the medicine table will be listed
     if main_input == '1':
         show_medicines()
 
@@ -222,7 +229,66 @@ while 1:
     elif main_input == '4':
         print(chr(9888), "NOTE: Please enter the actual name as in List")
 
-        med_name = input("Enter the Medicine name to Delete: ")
+        med_name = input("Enter the Medicine name to Add: ")
+        add_probable_list, add_probable_table = probable_med_and_table(med_name)
+
+        condition = add_probable_list[0] in med_list
+
+        if med_name in med_list:
+            print("The medicine already exists in the database. Try to update the medicine")
+            continue
+
+        elif condition:
+            print("\nThe medicine you wanted to enter does not exist but we have some probable list of medicines\n"
+                  "matching in our database if you want to update those input Y below if you press N you can\n"
+                  "enter the medicine as a new medicine.\n")
+
+            print(add_probable_table)
+
+            conf = input("Waiting for your input (Y / N) : ")
+            if conf in ['y','Y']:
+                print("You chose to update an existing medicine")
+                continue
+
+            else:
+                current_med = input("\nEnter the new medicine name: ")
+                current_use = input("Enter the Usage / Indication of the medicine: ")
+                current_qty = int(input("Enter the quantity of the medicine: "))
+
+                cursor.execute(f"INSERT INTO medicine values ('{current_med}', '{current_use}', {current_qty})")
+                conn.commit()
+                med_list += current_med
+
+                print("You have successfully added a new medicine to the database.")
+
+                continue_input = input("Would you like to continue: ")
+                if continue_input in ['y', 'Y']:
+                    continue
+
+                else:
+                    thanks()
+                    break
+
+        else:
+            print("The medicine you entered does not exist in our database you can add the medicine\n")
+            current_med = input("Enter the new medicine name: ")
+            current_use = input("Enter the Usage / Indication of the medicine: ")
+            current_qty = int(input("Enter the quantity of the medicine: "))
+
+            cursor.execute(f"INSERT INTO medicine values ('{current_med}', '{current_use}', {current_qty})")
+            conn.commit()
+            med_list += current_med
+
+            print("You have successfully added a new medicine to the database.")
+
+            continue_input = input("Would you like to continue: ")
+            if continue_input in ['y','Y']:
+                continue
+
+            else:
+                thanks()
+                break
+
 
 
 
